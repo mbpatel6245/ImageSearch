@@ -17,8 +17,7 @@ import com.mbpatel.imagesearch.ui.list.ViewModelFactory
 object Injection {
 
     /**
-     * Creates an instance of [ImageRepository] based on the [ServiceGenerator] and a
-     * [ImageLocalCache]
+     * Creates an instance of [ImageRepository] based on the [ServiceGenerator]
      */
     private fun provideSearchRepository(): ImageRepository {
         return ImageRepository(ServiceGenerator.create())
@@ -26,18 +25,25 @@ object Injection {
 
     /**
      * Provides the [ViewModelProvider.Factory] that is then used to get a reference to
-     * [ViewModel] objects.
+     * ViewModel objects.
      */
     fun provideViewModelFactory(): ViewModelProvider.Factory {
         return ViewModelFactory(provideSearchRepository())
     }
 
+    /**
+     * Creates an instance of [CommentRepository] based on the AppDatabase
+     */
     private fun getCommentRepository(context: Context): CommentRepository {
         return CommentRepository.getInstance(
             AppDatabase.getInstance(context.applicationContext).commentDao()
         )
     }
 
+    /**
+     * Provides the [ViewModelProvider.Factory] that is then used to get a reference to
+     * getCommentRepository objects and [imageId].
+     */
     fun provideImageDetailViewModelFactory(
         context: Context, imageId: String
     ): ImageDetailViewModelFactory {

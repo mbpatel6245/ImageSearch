@@ -2,6 +2,7 @@ package com.mbpatel.imagesearch.ui.list
 
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -17,15 +18,15 @@ import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.mbpatel.imagesearch.Injection
 import com.mbpatel.imagesearch.R
 import com.mbpatel.imagesearch.databinding.ActivityMainBinding
-import com.mbpatel.imagesearch.utils.NoAnyDataException
-import com.mbpatel.imagesearch.utils.NoMoreDataException
-import com.mbpatel.imagesearch.utils.isInternetAvailable
-import com.mbpatel.imagesearch.utils.showToast
+import com.mbpatel.imagesearch.utils.*
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.net.UnknownHostException
 
+/**
+ * Activity manages the search list
+ */
 class ImageListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: SearchImagesViewModel
@@ -33,6 +34,10 @@ class ImageListActivity : AppCompatActivity() {
 
     private var searchJob: Job? = null
 
+    /**
+     * perform the search query
+     * @param query string query
+     */
     private fun search(query: String) {
         if (!isInternetAvailable(this)) showToast(
             this,
@@ -56,8 +61,8 @@ class ImageListActivity : AppCompatActivity() {
         // get the view model
         viewModel = ViewModelProvider(this, Injection.provideViewModelFactory())
             .get(SearchImagesViewModel::class.java)
-
-        setRecyclerList()
+        Picasso.setSingletonInstance(getCustomPicasso(this))
+        initRecyclerList()
 
         initAdapter()
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
@@ -65,11 +70,14 @@ class ImageListActivity : AppCompatActivity() {
         initSearch(query)
     }
 
-    private fun setRecyclerList() {
+    /**
+     * set recyclerview properties
+     */
+    private fun initRecyclerList() {
         val spacing = resources.getDimensionPixelSize(R.dimen.recycler_spacing) / 2
         binding.rvSearchList.setPadding(spacing, spacing, spacing, spacing)
         binding.rvSearchList.layoutManager = GridLayoutManager(this, 4)
-        //binding.rvSearchList.setHasFixedSize(true)
+        binding.rvSearchList.setHasFixedSize(true)
         binding.rvSearchList.setItemViewCacheSize(20)
 
         binding.rvSearchList.addItemDecoration(object : ItemDecoration() {
@@ -82,6 +90,13 @@ class ImageListActivity : AppCompatActivity() {
                 outRect.set(spacing, spacing, spacing, spacing)
             }
         })
+        binding.rvSearchList.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if(newState==RecyclerView.SCROLL_STATE_DRAGGING)
+                    hideKeyboard(binding.edtSearchImage)
+            }
+        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -89,6 +104,9 @@ class ImageListActivity : AppCompatActivity() {
         outState.putString(LAST_SEARCH_QUERY, binding.edtSearchImage.text.trim().toString())
     }
 
+    /**
+     * Initialize the adapter for list
+     */
     private fun initAdapter() {
         binding.rvSearchList.adapter = adapter.withLoadStateHeaderAndFooter(
             header = PagingLoadStateAdapter { adapter.retry() },
@@ -110,26 +128,23 @@ class ImageListActivity : AppCompatActivity() {
                 ?: loadState.prepend as? LoadState.Error
                 ?: loadState.refresh as?  LoadState.Error
             errorState?.let {
+                Log.e("Error",it.error.toString())
                 binding.tvMessage.text = it.error.message.toString()
-                when (it.error) {
-                    is UnknownHostException -> showToast(
-                        this,
-                        getString(R.string.error_internet_connectivity)
-                    )
-                    is NoMoreDataException -> showToast(this, it.error.message.toString())
-                    is NoAnyDataException -> showToast(this, it.error.message.toString())
-                    else -> showToast(this, it.error.message.toString())
-                }
+                setError(this@ImageListActivity,it)
             }
         }
     }
 
+    /**
+     * Initialize search field
+     * @param query string value
+     */
     private fun initSearch(query: String) {
         binding.edtSearchImage.setText(query)
 
         binding.edtSearchImage.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
-                updateRepoListFromInput()
+                updateImageListFromInput()
                 true
             } else {
                 false
@@ -137,7 +152,7 @@ class ImageListActivity : AppCompatActivity() {
         }
         binding.edtSearchImage.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-                updateRepoListFromInput()
+                updateImageListFromInput()
                 true
             } else {
                 false
@@ -151,7 +166,10 @@ class ImageListActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateRepoListFromInput() {
+    /**
+     * Used for update query to update list
+     */
+    private fun updateImageListFromInput() {
         binding.edtSearchImage.text.trim().let {
             if (it.isNotEmpty()) {
                 binding.rvSearchList.scrollToPosition(0)

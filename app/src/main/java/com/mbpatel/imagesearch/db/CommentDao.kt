@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 
+/** room to defined dao for query*/
 @Dao
 interface CommentDao {
-
     @Query("SELECT * FROM comment WHERE image_id = :imageId")
     fun getComment(imageId: String): LiveData<Comment>
 

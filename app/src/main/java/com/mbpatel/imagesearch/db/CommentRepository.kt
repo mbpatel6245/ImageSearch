@@ -1,8 +1,11 @@
 package com.mbpatel.imagesearch.db
 
+/**
+ * Repository class that works with remote data sources.
+ */
 class CommentRepository private constructor(private val commentDao: CommentDao) {
 
-    fun getComment(imageId:String) = commentDao.getComment(imageId)
+    fun getComment(imageId: String) = commentDao.getComment(imageId)
 
     suspend fun saveComment(
         iId: String,

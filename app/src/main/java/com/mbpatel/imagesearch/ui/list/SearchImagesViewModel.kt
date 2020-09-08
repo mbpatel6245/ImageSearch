@@ -17,6 +17,9 @@ class SearchImagesViewModel(private val repository: ImageRepository) : ViewModel
 
     private var currentSearchResult: Flow<PagingData<SearchItemData>>? = null
 
+    /**
+     * perform the search images and update to the view Model
+     */
     fun searchImages(queryString: String): Flow<PagingData<SearchItemData>> {
         val lastResult = currentSearchResult
         if (queryString == currentQueryValue && lastResult != null) {

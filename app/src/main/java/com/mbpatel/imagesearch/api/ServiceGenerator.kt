@@ -1,5 +1,7 @@
 package com.mbpatel.imagesearch.api
 
+import com.mbpatel.imagesearch.BuildConfig
+import com.mbpatel.imagesearch.utils.Constants.HEADER_TOKEN
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,6 +29,9 @@ interface ServiceGenerator {
         private const val BASE_URL = "https://api.imgur.com/"
         private val httpClient: OkHttpClient.Builder = OkHttpClient.Builder()
 
+        /**
+         * Use for service generator create
+         */
         fun create(): ServiceGenerator {
             httpClient.connectTimeout(60, TimeUnit.SECONDS)
             httpClient.writeTimeout(60, TimeUnit.SECONDS)
@@ -36,7 +41,7 @@ interface ServiceGenerator {
                 val original: Request = it.request()
 
                 val request: Request =
-                    original.newBuilder().header("Authorization", "Client-ID 137cda6b5008a7c")
+                    original.newBuilder().header("Authorization", HEADER_TOKEN)
                         .build()
 
                 it.proceed(request)

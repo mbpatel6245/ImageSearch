@@ -6,4 +6,5 @@ object Constants {
     const val KEY_IMAGE_TITLE = "key_image_title"
     const val KEY_IMAGE_LINK = "key_image_link"
     const val KEY_IMAGE_ID = "key_image_id"
+    const val HEADER_TOKEN = "Client-ID 137cda6b5008a7c"
 }

@@ -9,6 +9,9 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.UnknownHostException
 
+/**
+ * ImageListPagingSource to fetch the paging api data fetching
+ */
 class ImageListPagingSource(
     private val service: ServiceGenerator,
     private val query: String
@@ -22,7 +25,7 @@ class ImageListPagingSource(
             when {
                 response.status == 500 -> throw NoMoreDataException("You have reached end of the data!")
                 response.success!! && response.status == 200 && response.data.isEmpty() -> {
-                    throw NoAnyDataException("No Any Data Found!")
+                    throw NoAnyDataException("Sorry! Did not found the data!")
                 }
                 else -> LoadResult.Page(
                     data = data,
@@ -31,16 +34,8 @@ class ImageListPagingSource(
                 )
             }
 
-        } catch (exception: UnknownHostException) {
-            return LoadResult.Error(exception)
-        } catch (exception: IOException) {
-            return LoadResult.Error(exception)
-        } catch (exception: HttpException) {
-            return LoadResult.Error(exception)
-        } catch (exception: NoMoreDataException) {
-            return LoadResult.Error(exception)
-        } catch (exception: NoAnyDataException) {
-            return LoadResult.Error(exception)
+        }catch (e:Throwable){
+            return LoadResult.Error(e)
         }
     }
 

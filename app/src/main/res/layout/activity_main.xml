@@ -47,8 +47,7 @@
         android:textSize="@dimen/error_text_size"
         app:layout_constraintBottom_toTopOf="@id/btnRetrySearchList"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <ProgressBar
         android:id="@+id/pbSearchList"
@@ -65,7 +64,8 @@
         android:id="@+id/btnRetrySearchList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_retry" android:textSize="@dimen/text_size"
+        android:text="@string/label_retry"
+        android:textSize="@dimen/text_size"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

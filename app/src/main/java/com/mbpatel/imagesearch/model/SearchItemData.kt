@@ -5,10 +5,10 @@ import java.io.Serializable
 
 class SearchItemData : Serializable {
     @SerializedName("id")
-   var id: String? = null
+    var id: String? = null
 
-   @SerializedName("account_id")
-   var accountId: Long =0
+    @SerializedName("account_id")
+    var accountId: Long = 0
 
     @SerializedName("title")
     var title: String? = null

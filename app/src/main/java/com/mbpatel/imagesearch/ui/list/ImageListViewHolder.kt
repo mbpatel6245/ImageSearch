@@ -10,11 +10,10 @@ import com.mbpatel.imagesearch.R
 import com.mbpatel.imagesearch.model.SearchImage
 import com.mbpatel.imagesearch.model.SearchItemData
 import com.mbpatel.imagesearch.ui.detail.ImageDetailActivity
+import com.mbpatel.imagesearch.utils.*
 import com.mbpatel.imagesearch.utils.Constants.KEY_IMAGE_ID
 import com.mbpatel.imagesearch.utils.Constants.KEY_IMAGE_LINK
 import com.mbpatel.imagesearch.utils.Constants.KEY_IMAGE_TITLE
-import com.mbpatel.imagesearch.utils.dip2px
-import com.mbpatel.imagesearch.utils.isValidWebURL
 import com.squareup.picasso.Picasso
 
 /**
@@ -27,53 +26,56 @@ class ImageListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     init {
         view.setOnClickListener {
+            var isNotImage = true
             itemData?.let { it1 ->
                 it1.searchImages?.let { it2 ->
                     isImageData(it2)?.let {
+                        isNotImage = false
                         val mIntent = Intent(view.context, ImageDetailActivity::class.java)
                         mIntent.putExtra(KEY_IMAGE_TITLE, it1.title.toString())
                         mIntent.putExtra(KEY_IMAGE_LINK, it.link)
-                        mIntent.putExtra(KEY_IMAGE_ID, (it1.id+it1.accountId))
+                        mIntent.putExtra(KEY_IMAGE_ID, (it1.id + it1.accountId))
                         view.context.startActivity(mIntent)
                     }
                 }
             }
-
-
-//            Toast.makeText(
-//                view.context,
-//                "\uD83D\uDE28 Wooops ${itemData!!.searchImages!![0].link}",
-//                Toast.LENGTH_LONG
-//            ).show()
-//            repo?.url?.let { url ->
-//                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-//                view.context.startActivity(intent)
-//            }
+            if (isNotImage)
+                showToast(
+                    view.context,
+                    view.context.getString(R.string.error_invalid_image)
+                )
         }
     }
 
+    /**
+     * Bind the searchable item data to viewholder
+     * @param data SearchItemData
+     */
     fun bind(data: SearchItemData?) {
-        if (data == null)
-            Picasso.get().load(R.color.gray).into(searchImage);
-        else {
+        var isNotImage = true
+        itemData = data
+        data?.searchImages?.let {
             itemData = data
-            data.searchImages?.let {
-                itemData = data
-                val imageData = isImageData(it)
-                if (imageData != null && isValidWebURL(imageData.link)) {
-                    val size = dip2px(
-                        itemView.context,
-                        itemView.context.resources.getDimension(R.dimen.image_load_size)
-                    )
-                    Picasso.get().load(imageData.link).placeholder(R.color.gray)
-                        .resize(size, size).centerCrop()
-                        .into(searchImage)
-                } else
-                    Picasso.get().load(R.color.gray).placeholder(R.color.gray).into(searchImage)
+            val imageData = isImageData(it)
+            if (imageData != null && isValidWebURL(imageData.link)) {
+                isNotImage = false
+                val size = dip2px(
+                    itemView.context,
+                    itemView.context.resources.getDimension(R.dimen.image_load_size)
+                )
+                loadImage(imageData.link, searchImage, size)
             }
         }
+        if (isNotImage)
+            loadErrorImage(searchImage)
     }
 
+
+    /**
+     * verify to check the image data
+     *
+     * @param list required list of search images
+     */
     private fun isImageData(list: List<SearchImage>): SearchImage? {
         if (list.isEmpty())
             return null

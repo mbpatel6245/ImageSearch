@@ -15,6 +15,7 @@ const val SEARCH_TYPE="jpg|png|gif"
  */
 class ImageRepository(private val service: ServiceGenerator) {
 
+    /**@param query set query param for search call*/
     fun getSearchResultStream(query: String): Flow<PagingData<SearchItemData>> {
         return Pager(
                 config = PagingConfig(
